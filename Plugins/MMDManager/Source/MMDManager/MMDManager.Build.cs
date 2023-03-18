@@ -18,6 +18,8 @@ public class MMDManager : ModuleRules
 		PrivateIncludePaths.AddRange(
 			new string[] {
 				// ... add other private include paths required here ...
+				System.IO.Path.GetFullPath(Target.RelativeEnginePath) + "/Source/Editor/Blutility/Private",
+				System.IO.Path.GetFullPath(Target.RelativeEnginePath) + "Developer/AssetTools/Private"
 			}
 			);
 			
@@ -25,8 +27,17 @@ public class MMDManager : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core",
-				// ... add other public dependencies that you statically link with here ...
+				"AssetTools",
+				"Blutility",
+				"Core", 
+				"CoreUObject", 
+				"Engine", 
+				"EditorScriptingUtilities",
+				"InputCore" ,
+				"PhysicsCore",
+				"UMG",
+				"UMGEditor",
+				"UnrealEd"
 			}
 			);
 			
