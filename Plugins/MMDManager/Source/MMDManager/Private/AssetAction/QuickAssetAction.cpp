@@ -7,9 +7,7 @@
 #include "Blutility/Public/EditorUtilityLibrary.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "ObjectTools.h"
-/************************************************************************/
-/*批量复制资产操作                                                         */
-/************************************************************************/
+
 void UQuickAssetAction::DuplicateAssets(int32 Num)
 {
 	//首先，它检查 Num 是否小于等于零。如果是，则使用 PrintMessage 函数打印一条红色消息并返回。
@@ -17,7 +15,7 @@ void UQuickAssetAction::DuplicateAssets(int32 Num)
 	{
 		//PrintMessage(TEXT("Please enter a correct number"), FColor::Red);
 		//FMessageDialog::Open(EAppMsgType::Ok, FText::FromString(TEXT("Please enter a correct number!")));
-		ShowMesDialog(EAppMsgType::Ok, TEXT("Please enter a correct number"));
+		DebugHeader::ShowMesDialog(EAppMsgType::Ok, TEXT("Please enter a correct number"));
 		return;
 	}
 	//获取选定的资产数据并将其存储在 SelectedAssetsData 数组中。
@@ -33,7 +31,7 @@ void UQuickAssetAction::DuplicateAssets(int32 Num)
 			const FString NewDuplicateAssetName = SelectedAssetData.AssetName.ToString() + TEXT("_") + FString::FromInt(i);
 			//使用 FPaths::Combine 函数将包路径和新重复资产名称组合成新路径名。
 			const FString NewPathName = FPaths::Combine(SelectedAssetData.PackagePath.ToString(), NewDuplicateAssetName);
-			PrintMessage(NewPathName, FColor::Red);
+			DebugHeader::PrintMessage(NewPathName, FColor::Red);
 			//如果复制成功，则使用 UEditorAssetLibrary::SaveAsset 函数保存新资产，并增加计数器。
 			if (UEditorAssetLibrary::DuplicateAsset(SourceAssetPath, NewPathName))
 			{
@@ -46,12 +44,10 @@ void UQuickAssetAction::DuplicateAssets(int32 Num)
 	if (counter > 0)
 	{
 		// PrintMessage(TEXT("Successfully Duplicated" + FString::FromInt(counter) + "File"), FColor::Green);
-		ShowNotifyinfo(TEXT("Successfully Duplicated" + FString::FromInt(counter) + "File"));
+		DebugHeader::ShowNotifyinfo(TEXT("Successfully Duplicated" + FString::FromInt(counter) + "File"));
 	}
 }
-/************************************************************************/
-/*批量自动添加前缀                                                         */
-/************************************************************************/
+
 void UQuickAssetAction::AddPrefixes()
 {
 	TArray<UObject*> SelectedObjects = UEditorUtilityLibrary::GetSelectedAssets();
@@ -70,7 +66,7 @@ void UQuickAssetAction::AddPrefixes()
 		//确认Prefix是否有效
 		if(!Prefix|| Prefix->IsEmpty())
 		{
-			PrintMessage(TEXT("Failed to find prefix for class") + SelectedObject->GetClass()->GetName(),FColor::Red);
+			DebugHeader::PrintMessage(TEXT("Failed to find prefix for class") + SelectedObject->GetClass()->GetName(),FColor::Red);
 			failed++;
 			continue;
 		}
@@ -80,7 +76,7 @@ void UQuickAssetAction::AddPrefixes()
 		//如果选中资产已经重命名。则跳过
 		if(OldName.StartsWith(*Prefix))
 		{
-			PrintMessage(OldName + ("Already has prefix added"), FColor::Red);
+			DebugHeader::PrintMessage(OldName + ("Already has prefix added"), FColor::Red);
 			failed++;
 			continue;
 		}
@@ -95,11 +91,9 @@ void UQuickAssetAction::AddPrefixes()
 		++succeed;
 	}
 	//拉个通知告诉用户都干了什么
-	ShowNotifyinfo(TEXT("succeed:") + FString::FromInt(succeed) + TEXT("failed:") + FString::FromInt(failed));
+	DebugHeader::ShowNotifyinfo(TEXT("succeed:") + FString::FromInt(succeed) + TEXT("failed:") + FString::FromInt(failed));
 }
-/************************************************************************/
-/*删除未使用资产                                                           */
-/************************************************************************/
+
 void UQuickAssetAction::RemoveUnusedAsset()
 {
 	TArray<FAssetData> SelectedAssetsData = UEditorUtilityLibrary::GetSelectedAssetData();
@@ -123,7 +117,7 @@ void UQuickAssetAction::RemoveUnusedAsset()
 	}
 	if (UnusedAssetsData.Num() == 0)
 	{
-		ShowNotifyinfo(TEXT("没有找到未使用资产！"));
+		DebugHeader::ShowNotifyinfo(TEXT("没有找到未使用资产！"));
 		return;
 	}
 	
@@ -133,6 +127,6 @@ void UQuickAssetAction::RemoveUnusedAsset()
 		return;
 	}
 	
-	ShowNotifyinfo(TEXT("成功删除") + FString::FromInt(NumOfAssetsDeleted) + TEXT("个未使用资产"));
+	DebugHeader::ShowNotifyinfo(TEXT("成功删除") + FString::FromInt(NumOfAssetsDeleted) + TEXT("个未使用资产"));
 	
 }
