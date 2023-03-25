@@ -37,8 +37,8 @@ public class MMDManager : ModuleRules
 				"PhysicsCore",
 				"UMG",
 				"UMGEditor",
-				"UnrealEd"
-			}
+				"UnrealEd","ContentBrowser"
+            }
 			);
 			
 		

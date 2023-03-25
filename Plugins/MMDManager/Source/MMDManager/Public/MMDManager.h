@@ -27,4 +27,14 @@ private:
 
 private:
 	TSharedPtr<class FUICommandList> PluginCommands;
+
+
+	void InitCBMenuExtention();
+
+	TSharedRef<FExtender>CustomCBMenuExtender(const TArray<FString>& SelectedPaths);
+
+	void AddCBMenuEntry(class FMenuBuilder& MenuBuilder);
+
+	void OnDeleteUnsuedAssetButtonClicked();
+
 };
