@@ -15,7 +15,7 @@
 #include "EditorAssetLibrary.h"
 #include "ObjectTools.h"
 #include "AssetRegistry/AssetRegistryModule.h"
-
+#include "AdvanceDeletion/AdvanceDeletionTab.h"
 
 static const FName MMDManagerTabName("MMDManager");
 
@@ -44,6 +44,7 @@ void FMMDManagerModule::StartupModule()
 		.SetMenuType(ETabSpawnerMenuType::Hidden);
 	
 	InitCBMenuExtention();
+	RegisterAdvanceDeletionTab();
 }
 
 void FMMDManagerModule::ShutdownModule()
@@ -172,7 +173,13 @@ void FMMDManagerModule::AddCBMenuEntry(FMenuBuilder& MenuBuilder)
 	FSlateIcon(),
 	FExecuteAction::CreateRaw(this,&FMMDManagerModule::OnDeleteEmptyFolder)
 	);
-
+	MenuBuilder.AddMenuEntry
+	(
+	FText::FromString(TEXT("高级选项")),
+	FText::FromString(TEXT("这里可操作性更高！")),
+	FSlateIcon(),
+	FExecuteAction::CreateRaw(this,&FMMDManagerModule::OnAdvanceDeleteonButtonClicked)
+	);
 	MenuBuilder.AddMenuEntry
 	(
 	FText::FromString(TEXT("---------MMD工具集选项---------")),
@@ -337,6 +344,31 @@ void FMMDManagerModule::FixUpRedirectors()
 
 void FMMDManagerModule::NullFun()
 {
+}
+
+void FMMDManagerModule::OnAdvanceDeleteonButtonClicked()
+{
+	FGlobalTabmanager::Get()->TryInvokeTab(FName("AdvanceDeletion"));
+}
+
+void FMMDManagerModule::RegisterAdvanceDeletionTab()
+{
+	// 注册名为“AdvanceDeletion”的全局选项卡
+	// 创建一个TabSpawner，并将其注册到全局TabManager中
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(FName("AdvanceDeletion"),
+		FOnSpawnTab::CreateRaw(this,&FMMDManagerModule::OnSpawnAdvanceDeltionTab)).SetDisplayName(FText::FromString(TEXT("advance Deletion")));
+
+}
+
+TSharedRef<SDockTab> FMMDManagerModule::OnSpawnAdvanceDeltionTab(const FSpawnTabArgs& SpawnTabArgs)
+{
+	return
+	// 创建一个SDockTab对象，并添加一个名为SAdvanceDeletionTab的SWidget作为其子项
+	SNew(SDockTab).TabRole(ETabRole::NomadTab)
+	[
+		SNew(SAdvanceDeletionTab)
+		.TestString(TEXT("hi!"))
+	];
 }
 #undef LOCTEXT_NAMESPACE
 	
