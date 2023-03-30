@@ -367,8 +367,32 @@ TSharedRef<SDockTab> FMMDManagerModule::OnSpawnAdvanceDeltionTab(const FSpawnTab
 	SNew(SDockTab).TabRole(ETabRole::NomadTab)
 	[
 		SNew(SAdvanceDeletionTab)
-		.TestString(TEXT("hi!"))
+		.AssetsDataArray(GetAllAssetDataUnderSelectedFolder())
 	];
+}
+
+TArray<TSharedPtr<FAssetData>> FMMDManagerModule::GetAllAssetDataUnderSelectedFolder()
+{
+	TArray<TSharedPtr<FAssetData>> AvaiableAssetsData;
+	TArray<FString> AssetsPathName = UEditorAssetLibrary::ListAssets(FolderPathsSelected[0]);
+	for (const FString& AssetPathName : AssetsPathName)
+	{
+		// 过滤引擎内容
+		if (AssetPathName.Contains(TEXT("Developers")) ||
+			AssetPathName.Contains(TEXT("Collections")))
+		{
+			continue;
+		}
+		// 如果资产不存在，则跳过此资产
+		if (!UEditorAssetLibrary::DoesAssetExist(AssetPathName))
+		{
+			continue;
+		}
+		const FAssetData Data = UEditorAssetLibrary::FindAssetData(AssetPathName);
+		AvaiableAssetsData.Add(MakeShared<FAssetData>(Data));
+	}
+
+	return AvaiableAssetsData;
 }
 #undef LOCTEXT_NAMESPACE
 	

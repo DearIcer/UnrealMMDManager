@@ -72,5 +72,7 @@ private:
 	/*当名为“AdvanceDeletion”的选项卡被生成时，将会调用该函数                      */
 	/************************************************************************/
 	TSharedRef<SDockTab>OnSpawnAdvanceDeltionTab(const FSpawnTabArgs& SpawnTabArgs);
+
+	TArray<TSharedPtr<FAssetData>> GetAllAssetDataUnderSelectedFolder();
 #pragma endregion 
 };
