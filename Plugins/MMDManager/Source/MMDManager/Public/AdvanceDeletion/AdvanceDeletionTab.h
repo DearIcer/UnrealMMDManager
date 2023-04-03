@@ -10,7 +10,6 @@ class SAdvanceDeletionTab : public SCompoundWidget
 	// SLATE_BEGIN_ARGS 和 SLATE_END_ARGS 宏用于在类定义中声明Slate组件的构造参数
 	SLATE_BEGIN_ARGS(SAdvanceDeletionTab){}
 
-	// 声明构造参数TestString，它的类型为FString
 	SLATE_ARGUMENT(TArray<TSharedPtr<FAssetData>>,AssetsDataArray)
 	SLATE_END_ARGS()
 
@@ -18,11 +17,26 @@ public:
 	// 该函数用于构建SAdvanceDeletionTab组件的UI布局
 	void Construct(const FArguments& InArgs);
 private:
+#pragma region SlateWidget
 	TArray<TSharedPtr<FAssetData>> AssetDatasUnderSelectedFolderArray;
-
+	TSharedRef<SListView<TSharedPtr<FAssetData>>> ConstructAssetListView();
+	TSharedPtr<SListView<TSharedPtr<FAssetData>>> ConstructedAssetListView;
 	TSharedRef<ITableRow>OnGenerateRowForList(TSharedPtr<FAssetData> AssetDataToDisplay,
 		const TSharedRef<STableViewBase> &OwnerTable);
+	void RefreshAssetListView();
 
 	TSharedRef<SCheckBox>ConstructCheckBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
 	void OnCheckBoxStateChanged(ECheckBoxState NewState, TSharedPtr<FAssetData> AssetData);
+
+	TSharedRef<STextBlock>ConstructTextForRowWidget(const FString& TextContent, const FSlateFontInfo& FontInfo);
+
+	FSlateFontInfo GetEmboseedTextFont() const
+	{
+		return FCoreStyle::Get().GetFontStyle(FName("EmbossedText"));
+	}
+
+	TSharedRef<SButton>ConstructButton(const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnDeleteButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+
+#pragma endregion
 };

@@ -25,6 +25,7 @@ private:
 
 	TSharedRef<class SDockTab> OnSpawnPluginTab(const class FSpawnTabArgs& SpawnTabArgs);
 
+#pragma region MenuExtention
 private:
 	TSharedPtr<class FUICommandList> PluginCommands;
 	/************************************************************************/
@@ -63,7 +64,10 @@ private:
 	/*高级选项点击事件					                                        */
 	/************************************************************************/
 	void OnAdvanceDeleteonButtonClicked();
+#pragma endregion
+
 #pragma region CustomEditorTab
+private:
 	/************************************************************************/
 	/*注册名为“AdvanceDeletion”的全局选项卡                                     */
 	/************************************************************************/
@@ -72,7 +76,14 @@ private:
 	/*当名为“AdvanceDeletion”的选项卡被生成时，将会调用该函数                      */
 	/************************************************************************/
 	TSharedRef<SDockTab>OnSpawnAdvanceDeltionTab(const FSpawnTabArgs& SpawnTabArgs);
-
+	/************************************************************************/
+	/*获取所有当前选中文件夹中的未使用资源					                      */
+	/************************************************************************/
 	TArray<TSharedPtr<FAssetData>> GetAllAssetDataUnderSelectedFolder();
+#pragma endregion 
+
+#pragma region ProccessDataForAssetList
+public:
+	bool DeleteSingleAssetForAssetList(const FAssetData& AssetDataToDelete);
 #pragma endregion 
 };

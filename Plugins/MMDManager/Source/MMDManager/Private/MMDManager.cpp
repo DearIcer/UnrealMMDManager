@@ -63,6 +63,7 @@ void FMMDManagerModule::ShutdownModule()
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(MMDManagerTabName);
 }
 
+#pragma region MenuExtention
 TSharedRef<SDockTab> FMMDManagerModule::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
 	FText WidgetText = FText::Format(
@@ -350,30 +351,53 @@ void FMMDManagerModule::OnAdvanceDeleteonButtonClicked()
 {
 	FGlobalTabmanager::Get()->TryInvokeTab(FName("AdvanceDeletion"));
 }
+#pragma endregion
 
+#pragma region CustomEditorTab
 void FMMDManagerModule::RegisterAdvanceDeletionTab()
 {
 	// 注册名为“AdvanceDeletion”的全局选项卡
 	// 创建一个TabSpawner，并将其注册到全局TabManager中
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(FName("AdvanceDeletion"),
-		FOnSpawnTab::CreateRaw(this,&FMMDManagerModule::OnSpawnAdvanceDeltionTab)).SetDisplayName(FText::FromString(TEXT("advance Deletion")));
+		FOnSpawnTab::CreateRaw(this,&FMMDManagerModule::OnSpawnAdvanceDeltionTab))
+		.SetDisplayName(FText::FromString(TEXT("高级删除")))
+		.SetMenuType(ETabSpawnerMenuType::Hidden);
 
 }
 
 TSharedRef<SDockTab> FMMDManagerModule::OnSpawnAdvanceDeltionTab(const FSpawnTabArgs& SpawnTabArgs)
 {
+	if (GetAllAssetDataUnderSelectedFolder().Num() == 0)
+	{
+		return SNew(SDockTab)
+			.TabRole(ETabRole::NomadTab)
+			[
+				// Put your tab content here!
+				SNew(SBox)
+					.HAlign(HAlign_Center)
+					.VAlign(VAlign_Center)
+				[
+					SNew(STextBlock)
+						.Text(FText::FromString(TEXT("上次编辑器关闭异常，如果需要此工具，请关闭当前页面重新打开！")))
+				]
+			];
+	}
 	return
 	// 创建一个SDockTab对象，并添加一个名为SAdvanceDeletionTab的SWidget作为其子项
 	SNew(SDockTab).TabRole(ETabRole::NomadTab)
 	[
 		SNew(SAdvanceDeletionTab)
-		.AssetsDataArray(GetAllAssetDataUnderSelectedFolder())
+			.AssetsDataArray(GetAllAssetDataUnderSelectedFolder())
 	];
 }
 
 TArray<TSharedPtr<FAssetData>> FMMDManagerModule::GetAllAssetDataUnderSelectedFolder()
 {
 	TArray<TSharedPtr<FAssetData>> AvaiableAssetsData;
+	if (FolderPathsSelected.Num() == 0)
+	{
+		return TArray<TSharedPtr<FAssetData>>();
+	}
 	TArray<FString> AssetsPathName = UEditorAssetLibrary::ListAssets(FolderPathsSelected[0]);
 	for (const FString& AssetPathName : AssetsPathName)
 	{
@@ -388,12 +412,38 @@ TArray<TSharedPtr<FAssetData>> FMMDManagerModule::GetAllAssetDataUnderSelectedFo
 		{
 			continue;
 		}
-		const FAssetData Data = UEditorAssetLibrary::FindAssetData(AssetPathName);
-		AvaiableAssetsData.Add(MakeShared<FAssetData>(Data));
+		// 查找引用此资产的资产数量，如果为0，则将此资产添加到未使用的资产数据数组中
+		// 后续需求，新增开关是否加入有引用资产
+		TArray<FString>AssetReferencers = UEditorAssetLibrary::FindPackageReferencersForAsset(AssetPathName);
+		if (AssetReferencers.Num() == 0)
+		{
+			const FAssetData Data = UEditorAssetLibrary::FindAssetData(AssetPathName);
+			AvaiableAssetsData.Add(MakeShared<FAssetData>(Data));
+		}
 	}
 
 	return AvaiableAssetsData;
 }
+#pragma endregion 
+
+
+#pragma region ProccessDataForAssetList
+
+bool FMMDManagerModule::DeleteSingleAssetForAssetList(const FAssetData& AssetDataToDelete)
+{
+	TArray<FAssetData> AssetDataForDeletion;
+	AssetDataForDeletion.Add(AssetDataToDelete);
+	if (ObjectTools::DeleteAssets(AssetDataForDeletion) > 0)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+#pragma endregion 
 #undef LOCTEXT_NAMESPACE
 	
 IMPLEMENT_MODULE(FMMDManagerModule, MMDManager)
