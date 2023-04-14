@@ -54,10 +54,33 @@ void SAdvanceDeletionTab::Construct(const FArguments& InArgs)
 				]
 			]
 		// 水平盒子
-		+SVerticalBox::Slot()
+		+ SVerticalBox::Slot()
 			.AutoHeight()
 			[
 				SNew(SHorizontalBox)
+				//按钮1
+				+SHorizontalBox::Slot()
+					.FillWidth(10.f)
+					.Padding(5.f)
+					[
+						ConstructDeleteAllButton()
+					]
+				//按钮2
+				+ SHorizontalBox::Slot()
+					.FillWidth(10.f)
+					.Padding(5.f)
+					[
+						ConstructSelectedButton()
+					]
+					
+				//按钮3
+
+				+SHorizontalBox::Slot()
+					.FillWidth(10.f)
+					.Padding(5.f)
+					[
+						ConstructDelectedButton()
+					]
 			]
 	];
 }
@@ -180,6 +203,57 @@ TSharedRef<SButton> SAdvanceDeletionTab::ConstructButton(const TSharedPtr<FAsset
 		.OnClicked(this, &SAdvanceDeletionTab::OnDeleteButtonClicked, AssetDataToDisplay);
 	return ConstructedButton;
 
+}
+TSharedRef<SButton> SAdvanceDeletionTab::ConstructDeleteAllButton()
+{
+	TSharedRef<SButton> DeleteAllButton = SNew(SButton)
+		.ContentPadding(FMargin(5.f))
+		.OnClicked(this, &SAdvanceDeletionTab::OnDeleteAllButtonClicked);
+
+	DeleteAllButton->SetContent(ConstructTextForTabButton(TEXT("删除全部")));
+	return DeleteAllButton;
+}
+TSharedRef<SButton> SAdvanceDeletionTab::ConstructSelectedButton()
+{
+	TSharedRef<SButton>SelectedAllButton = SNew(SButton)
+		.ContentPadding(FMargin(5.f))
+		.OnClicked(this, &SAdvanceDeletionTab::OnSelectedButtonClicked);
+
+	SelectedAllButton->SetContent(ConstructTextForTabButton(TEXT("选择全部")));
+	return SelectedAllButton;
+}
+TSharedRef<SButton> SAdvanceDeletionTab::ConstructDelectedButton()
+{
+	TSharedRef<SButton>DelectedAllButton = SNew(SButton)
+		.ContentPadding(FMargin(5.f))
+		.OnClicked(this, &SAdvanceDeletionTab::OnDelectedButtonClicked);
+
+	DelectedAllButton->SetContent(ConstructTextForTabButton(TEXT("取消选择")));
+	return DelectedAllButton;
+}
+
+TSharedRef<STextBlock> SAdvanceDeletionTab::ConstructTextForTabButton(const FString& Content)
+{
+	FSlateFontInfo ButtonTextFont = GetEmboseedTextFont();
+	ButtonTextFont.Size = 15;
+	TSharedRef<STextBlock> ConstructedTextBlock = SNew(STextBlock)
+		.Text(FText::FromString(Content))
+		.Font(ButtonTextFont)
+		.Justification(ETextJustify::Center);
+
+	return ConstructedTextBlock;
+}
+FReply SAdvanceDeletionTab::OnDeleteAllButtonClicked()
+{
+	return FReply::Handled();
+}
+FReply SAdvanceDeletionTab::OnSelectedButtonClicked()
+{
+	return FReply::Handled();
+}
+FReply SAdvanceDeletionTab::OnDelectedButtonClicked()
+{
+	return FReply::Handled();
 }
 FReply SAdvanceDeletionTab::OnDeleteButtonClicked(TSharedPtr<FAssetData> ClickedAssetData)
 {

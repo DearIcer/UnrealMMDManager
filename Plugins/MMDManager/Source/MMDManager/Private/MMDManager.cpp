@@ -414,12 +414,12 @@ TArray<TSharedPtr<FAssetData>> FMMDManagerModule::GetAllAssetDataUnderSelectedFo
 		}
 		// 查找引用此资产的资产数量，如果为0，则将此资产添加到未使用的资产数据数组中
 		// 后续需求，新增开关是否加入有引用资产
-		TArray<FString>AssetReferencers = UEditorAssetLibrary::FindPackageReferencersForAsset(AssetPathName);
-		if (AssetReferencers.Num() == 0)
-		{
+		//TArray<FString>AssetReferencers = UEditorAssetLibrary::FindPackageReferencersForAsset(AssetPathName);
+		//if (AssetReferencers.Num() == 0)
+		//{
 			const FAssetData Data = UEditorAssetLibrary::FindAssetData(AssetPathName);
 			AvaiableAssetsData.Add(MakeShared<FAssetData>(Data));
-		}
+		//}
 	}
 
 	return AvaiableAssetsData;

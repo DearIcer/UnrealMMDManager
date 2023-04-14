@@ -38,5 +38,14 @@ private:
 	TSharedRef<SButton>ConstructButton(const TSharedPtr<FAssetData>& AssetDataToDisplay);
 	FReply OnDeleteButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
 
+	TSharedRef<SButton>ConstructDeleteAllButton();
+	TSharedRef<SButton>ConstructSelectedButton();
+	TSharedRef<SButton>ConstructDelectedButton();
+
+	FReply OnDeleteAllButtonClicked();
+	TSharedRef<STextBlock> ConstructTextForTabButton(const FString& Content);
+
+	FReply OnSelectedButtonClicked();
+	FReply OnDelectedButtonClicked();
 #pragma endregion
 };
