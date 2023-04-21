@@ -9,8 +9,9 @@
 #include "Modules/ModuleManager.h"
 #include "Widgets/Input/SButton.h"
 
-#define ListAll TEXT("List ALl Available Assets")
-#define ListUnused TEXT("List Unused Assets")
+#define ListAll TEXT("查看所有资源")
+#define ListUnused TEXT("查看未使用资源")
+#define ListSameName TEXT("查看同名资产")
 
 #pragma region SlateWidget
 
@@ -20,18 +21,23 @@ void SAdvancedOptionsWiget::Construct(const FArguments& InArgs)
 	bCanSupportFocus = true;
 
 	// 定义字体样式，设置字体大小为 30
-	FSlateFontInfo TitleTextFont = FCoreStyle::Get().GetFontStyle(FName("EmbossedText"));
+	FSlateFontInfo TitleTextFont = GetEmboseedTextFont();
 	TitleTextFont.Size = 30;
 
 	//传递选中文件里的资产数据
 	AssetDatasSelectedFolderArray = InArgs._AssetsDataArray;
 	DisplayedAssetsData = AssetDatasSelectedFolderArray;
 
+	//是否同步到内容浏览器
+	bSynchronizeTheSelectedItemToTheContentBrowser = MakeShared<bool>(false); // 智能指针，并将其初始化为 false
+
 	CheckBoxesArray.Empty();
 	AssetsDataToDeleteArray.Empty();
-
+	ComboxSourceItems.Empty();
+	
 	ComboxSourceItems.Add(MakeShared<FString>(ListAll));
 	ComboxSourceItems.Add(MakeShared<FString>(ListUnused));
+	ComboxSourceItems.Add(MakeShared<FString>(ListSameName));
 	
 	ChildSlot
 	[
@@ -56,10 +62,10 @@ void SAdvancedOptionsWiget::Construct(const FArguments& InArgs)
 					+SHorizontalBox::Slot()
 					.AutoWidth()
 					[
-						ConstructComboBox()//,ConstructRefreshAssetListViewButton()
+						ConstructComboBox()
 					]
 			]
-			// 水平盒子,构造刷新按钮
+		// 水平盒子,构造刷新按钮
 		+SVerticalBox::Slot()
 			.AutoHeight()
 			[
@@ -68,6 +74,17 @@ void SAdvancedOptionsWiget::Construct(const FArguments& InArgs)
 					.AutoWidth()
 					[
 						ConstructRefreshAssetListViewButton()
+					]
+			]
+		// 水平盒子,构造是否将资产同步到内容浏览器多选框
+		+SVerticalBox::Slot()
+			.AutoHeight()
+			[
+				SNew(SHorizontalBox)
+					+SHorizontalBox::Slot()
+					.AutoWidth()
+					[
+						ConstructSynchronousOrNotCheckBox(bSynchronizeTheSelectedItemToTheContentBrowser)
 					]
 			]
 		// 滚动列表,显示资产列
@@ -110,7 +127,8 @@ TSharedRef<SListView<TSharedPtr<FAssetData>>> SAdvancedOptionsWiget::ConstructAs
 	ConstructedAssetListView = SNew(SListView<TSharedPtr<FAssetData>>)// 创建列表视图
 		.ItemHeight(24.f)
 		.ListItemsSource(&DisplayedAssetsData)// 列表项数据源---------------------------------------------------------
-		.OnGenerateRow(this, &SAdvancedOptionsWiget::OnGenerateRowForList);// 列表项生成委托
+		.OnGenerateRow(this, &SAdvancedOptionsWiget::OnGenerateRowForList)// 列表项生成委托
+		.OnMouseButtonClick(this,&SAdvancedOptionsWiget::OnAssetListViewMouseButtonClick);
 
 	return ConstructedAssetListView.ToSharedRef();
 }
@@ -197,7 +215,7 @@ TSharedRef<SComboBox<TSharedPtr<FString>>> SAdvancedOptionsWiget::ConstructCombo
 				[
 					// 设置文本和颜色/字体属性等。
 					SAssignNew(ComboDisplayTextBlock,STextBlock)
-						.Text(FText::FromString(TEXT("List Assets Option")))
+						.Text(FText::FromString(TEXT("列表显示设置")))
 				]
 			;
 	// 返回新构造的 ComboBox 的引用。
@@ -207,10 +225,10 @@ TSharedRef<SComboBox<TSharedPtr<FString>>> SAdvancedOptionsWiget::ConstructCombo
 TSharedRef<SWidget> SAdvancedOptionsWiget::OnGenerateComboContent(TSharedPtr<FString> SourceItem)
 {
 	// 创建一个指向 STextBlock 类的引用，并对其进行初始化。
-TSharedRef<STextBlock> ConstructedComboText = SNew(STextBlock)
-	// 通过 Get() 函数获取 SourceItem 的当前值字符串，将其转换为 FText 类型。
-	.Text(FText::FromString(*SourceItem.Get()));
-	// 返回新构造的 STextBlock 实例的引用。
+	TSharedRef<STextBlock> ConstructedComboText = SNew(STextBlock)
+		// 通过 Get() 函数获取 SourceItem 的当前值字符串，将其转换为 FText 类型。
+		.Text(FText::FromString(*SourceItem.Get()));
+		// 返回新构造的 STextBlock 实例的引用。
 	return ConstructedComboText;
 }
 
@@ -226,14 +244,20 @@ void SAdvancedOptionsWiget::OnComboSelectionChanged(TSharedPtr<FString> Selected
 	// 根据用户选择更新显示的资产列表。
 	if (*SelectedOption.Get() == ListAll)
 	{
-		// 如果用户选择“列表全部”，则输出调试消息并返回。
-		DebugHeader::PrintMessage(TEXT("ceshi"),FColor::Blue);
+		// 如果用户选择“列表全部”，则显示所有资产。
+		DisplayedAssetsData = AssetDatasSelectedFolderArray;
+		RefreshAssetListView();
 	}
 	else if (*SelectedOption.Get() == ListUnused)
 	{
 		// 如果用户选择“列表未使用”的选项，则调用 ListUnusedAssetsForAssetList 函数以获取未使用的资产数据，获取成功后刷新资产列表视图。
-		DebugHeader::PrintMessage(TEXT("查看未选中资产"),FColor::Blue);
 		IceModule.ListUnusedAssetsForAssetList(AssetDatasSelectedFolderArray,DisplayedAssetsData);
+		RefreshAssetListView();
+	}
+	else if (*SelectedOption.Get() == ListSameName)
+	{
+		// 如果用户选择“显示同名资产”，则显示所有名字相同类型相同的资产。
+		IceModule.ListSameNameAssetsForAssetList(AssetDatasSelectedFolderArray,DisplayedAssetsData);
 		RefreshAssetListView();
 	}
 }
@@ -343,6 +367,29 @@ TSharedRef<SButton> SAdvancedOptionsWiget::ConstructRefreshAssetListViewButton()
 	// 返回新构造的 SButton 实例的引用。
 	return RefreshAssetListViewButton;
 }
+TSharedRef<SCheckBox> SAdvancedOptionsWiget::ConstructSynchronousOrNotCheckBox(const TSharedPtr<bool>& bSync)
+{
+	// 创建 SCheckBox 控件，并将其赋值给 TSharedRef<SCheckBox> 类型的变量 ConstructedCheckBox
+	TSharedRef<SCheckBox> ConstructedCheckBox = SNew(SCheckBox)
+		.Type(ESlateCheckBoxType::CheckBox) // 指定复选框类型
+		//.IsChecked_Static(&SAdvancedOptionsWiget::GetSynchronousOrNotCheckBoxState, bSync) // 设置复选框的选中状态
+		.OnCheckStateChanged(this, &SAdvancedOptionsWiget::OnSynchronousOrNotCheckBoxStateChanged, bSync) 
+		.Content()
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.VAlign(VAlign_Center)
+			.Padding(FMargin(2.0f, 0.0f))
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString(TEXT("是否将所选资产同步到内容浏览器")))
+			]
+		];
+		
+	return ConstructedCheckBox;// 返回构造的复选框控件
+}
+
 #pragma endregion
 
 #pragma region SlateWigetEvent
@@ -387,11 +434,14 @@ FReply SAdvancedOptionsWiget::OnDeleteButtonClicked(TSharedPtr<FAssetData> Click
 	if (bAssetDeleted)
 	{
 		// 刷新列表
+		// 从文件夹资产数组和展示资产数组中移除已删除的资产数据
 		if (AssetDatasSelectedFolderArray.Contains(ClickedAssetData))
 		{
-			// 从文件夹资产数组和展示资产数组中移除已删除的资产数据
-			DisplayedAssetsData.Remove(ClickedAssetData);
 			AssetDatasSelectedFolderArray.Remove(ClickedAssetData);
+		}
+		if (DisplayedAssetsData.Contains(ClickedAssetData))
+		{
+			DisplayedAssetsData.Remove(ClickedAssetData);
 		}
 		RefreshAssetListView();
 	}
@@ -430,13 +480,17 @@ FReply SAdvancedOptionsWiget::OnDeleteAllButtonClicked()
 		// AssetDatasSelectedFolderArray 是一个包含 TSharedPtr<FAssetData> 类型指针的数组
 		for (const TSharedPtr<FAssetData>& DeletedDate : AssetsDataToDeleteArray)
 		{
+			// 刷新列表
+			// 从文件夹资产数组和展示资产数组中移除已删除的资产数据
 			if (AssetDatasSelectedFolderArray.Contains(DeletedDate))
 			{
-				DisplayedAssetsData.Remove(DeletedDate);
 				AssetDatasSelectedFolderArray.Remove(DeletedDate);
 			}
+			if (DisplayedAssetsData.Contains(DeletedDate))
+			{
+				DisplayedAssetsData.Remove(DeletedDate);
+			}
 		}
-		// 刷新资产列表
 		RefreshAssetListView();
 	}
 	// 返回一个 FReply 对象表示事件处理已完成
@@ -502,7 +556,29 @@ FReply SAdvancedOptionsWiget::ConstructRefreshAssetListViewButtonClicked()
 	// 返回一个响应状态，表示已对用户的操作进行了处理
 	return FReply::Handled();
 }
+void SAdvancedOptionsWiget::OnSynchronousOrNotCheckBoxStateChanged(ECheckBoxState NewState, TSharedPtr<bool> bSync)
+{
+	*bSync = (NewState == ECheckBoxState::Checked); // 将用户选择的状态更新到 bSync 变量中
+}
 
+ECheckBoxState SAdvancedOptionsWiget::GetSynchronousOrNotCheckBoxState(TSharedPtr<bool> bSync)
+{
+	//TSharedPtr<bool> bSyncCopy = bSync;   // 利用别名构造函数创建一个与原始对象共享引用计数的对象
+	//DebugHeader::PrintMessage(FString::Printf(TEXT("%d"), *bSyncCopy),FColor::Red);
+	return (*bSync) ? ECheckBoxState::Checked : ECheckBoxState::Unchecked; // 返回复选框的选中状态
+}
+
+void SAdvancedOptionsWiget::OnAssetListViewMouseButtonClick(TSharedPtr<FAssetData> ClickedData)
+{
+	if (*bSynchronizeTheSelectedItemToTheContentBrowser == true)
+	{
+		// 调用 IceModule 对象的 SyncCBToClickedAssetForAssetList 函数，
+		// 并将 ClickedData->ObjectPath.ToString() 转换为字符串后作为参数传递给该函数。
+		// 这个函数将会根据 ClickedData 数据，将 Content Browser 中选定的资产同步到该资产的路径中。
+		FIceDevelopmentAssetBatchingModule& IceModule = FModuleManager::LoadModuleChecked<FIceDevelopmentAssetBatchingModule>(TEXT("IceDevelopmentAssetBatching"));
+		IceModule.SyncCBToClickedAssetForAssetList(ClickedData->ObjectPath.ToString());
+	}
+}
 #pragma endregion
 
 #pragma region Ohter

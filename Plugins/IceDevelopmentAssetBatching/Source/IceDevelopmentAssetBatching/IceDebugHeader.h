@@ -13,7 +13,7 @@ namespace DebugHeader
 	 * @param Message 要打印的信息
 	 * @param Color 颜色
 	 */
-	static void PrintMessage(const FString & Message, const FColor &Color)
+	static void PrintMessage(const FString & Message, const FColor &Color = FColor::Green)
 	{
 		if (GEngine)
 		{

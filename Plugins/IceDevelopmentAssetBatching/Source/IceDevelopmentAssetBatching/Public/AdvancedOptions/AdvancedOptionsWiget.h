@@ -25,7 +25,10 @@ public:
 
 private:
 #pragma region AssetData
-	
+	/**
+	 * @brief 是否将选择资产同步到内容浏览器
+	 */
+	TSharedPtr<bool>  bSynchronizeTheSelectedItemToTheContentBrowser;
 	/**
 	 * @brief 选中文件夹的资产数据
 	 */
@@ -114,6 +117,11 @@ private:
 	 */
 	TSharedRef<SButton>ConstructRefreshAssetListViewButton();
 
+	/**
+	 * @brief 构造多选框
+	 * @return 
+	 */
+	TSharedRef<SCheckBox>ConstructSynchronousOrNotCheckBox(const TSharedPtr<bool>& bSync);
 #pragma endregion
 
 #pragma region ComboBoxForListingCondition
@@ -197,5 +205,26 @@ private:
 	 * @return 
 	 */
 	FReply ConstructRefreshAssetListViewButtonClicked();
+
+	/**
+	 * @brief 是否同步内容浏览器点击事件
+	 * @param NewState 选择状态
+	 * @param bSync 同步状态
+	 * @return 
+	 */
+	void OnSynchronousOrNotCheckBoxStateChanged(ECheckBoxState NewState,TSharedPtr<bool> bSync);
+
+	/**
+ 	 * @brief 返回选中状态
+ 	 * @param bSync 
+ 	 * @return 
+ 	 */
+ 	static  ECheckBoxState GetSynchronousOrNotCheckBoxState(TSharedPtr<bool> bSync);
+
+	/**
+	 * @brief 列表数据点击事件
+	 * @param ClickedData 
+	 */
+	void OnAssetListViewMouseButtonClick(TSharedPtr<FAssetData> ClickedData);
 #pragma endregion 
 };

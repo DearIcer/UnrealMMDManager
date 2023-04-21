@@ -230,6 +230,7 @@ void FIceDevelopmentAssetBatchingModule::OnDeleteEmptyFolder()
 void FIceDevelopmentAssetBatchingModule::OnAdvanceOptionsButtonClicked()
 {
 	//DebugHeader::PrintMessage(TEXT("测试信息"),FColor::Green);
+	FixUpRedirectors();
 	FGlobalTabmanager::Get()->TryInvokeTab(FName("AdvancedOptions"));
 }
 
@@ -395,9 +396,6 @@ void FIceDevelopmentAssetBatchingModule::ListUnusedAssetsForAssetList(const TArr
 	// 然后遍历待过滤的资产数据数组 AssetDataToFilter
 	for (const TSharedPtr<FAssetData>& Data : AssetDataToFilter)
 	{
-		// 输出当前正在检查的资产数据对象的路径信息
-		DebugHeader::PrintMessage(Data->ObjectPath.ToString(), FColor::Red);
-
 		// 调用函数获取该资产的包引用器数组
 		TArray<FString> AssetReferencers = UEditorAssetLibrary::FindPackageReferencersForAsset(Data->ObjectPath.ToString());
 
@@ -407,6 +405,50 @@ void FIceDevelopmentAssetBatchingModule::ListUnusedAssetsForAssetList(const TArr
 			OutUnseDatas.Add(Data);
 		}
 	}
+}
+
+void FIceDevelopmentAssetBatchingModule::ListSameNameAssetsForAssetList(
+	const TArray<TSharedPtr<FAssetData>>& AssetDataToFilter, TArray<TSharedPtr<FAssetData>>& OutDatas)
+{
+	OutDatas.Empty(); // 清空输出数组,确保操作唯一性
+
+	TMultiMap<FString,TSharedPtr<FAssetData>> AssetsInfoMultiMap; // 创建一个字符串到 FAssetData 智能指针的多重映射表
+
+	// 遍历输入的 FAssetData 智能指针数组，将每个 FAssetData 按照其 AssetName 字符串添加到多重映射表中对应的列表中
+	for (const TSharedPtr<FAssetData> & DataSharedPtr : AssetDataToFilter)
+	{
+		AssetsInfoMultiMap.Emplace(DataSharedPtr->AssetName.ToString(),DataSharedPtr);
+	}
+	
+	// 再次遍历输入的 FAssetData 智能指针数组
+	for (const TSharedPtr<FAssetData> & DataSharedPtr : AssetDataToFilter)
+	{
+		TArray<TSharedPtr<FAssetData>> OutAssetsData;
+		AssetsInfoMultiMap.MultiFind(DataSharedPtr->AssetName.ToString(),OutAssetsData); // 从多重映射表中查找所有具有相同 AssetName 字符串的 FAssetData
+
+		if (OutAssetsData.Num() <= 1) // 如果只找到了一个，说明这个 FAssetData 是唯一的，无需处理
+		{
+			continue;
+		}
+
+		// 否则将所有的相同 FAssetData 加入输出数组中（除非该 FAssetData 的智能指针无效）
+		for (const TSharedPtr<FAssetData> & SameNameDataDataSharedPtr : OutAssetsData)
+		{
+			if (SameNameDataDataSharedPtr.IsValid())
+			{
+				OutDatas.AddUnique(SameNameDataDataSharedPtr);
+			}
+		}
+	}
+}
+
+void FIceDevelopmentAssetBatchingModule::SyncCBToClickedAssetForAssetList(const FString& AssetPathToSync)
+{
+	//要同步的数据
+	TArray<FString> AssetsPathToSync;
+	AssetsPathToSync.Add(AssetPathToSync);
+	//同步数据，接受的是Tarray
+	UEditorAssetLibrary::SyncBrowserToObjects(AssetsPathToSync);
 }
 #pragma endregion
 #undef LOCTEXT_NAMESPACE

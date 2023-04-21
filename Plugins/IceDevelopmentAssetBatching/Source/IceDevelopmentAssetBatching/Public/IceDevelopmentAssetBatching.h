@@ -120,5 +120,18 @@ public:
 	 * @param OutUnseDatas 
 	 */
 	void ListUnusedAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& AssetDataToFilter, TArray<TSharedPtr<FAssetData>> & OutUnseDatas);
+
+	/**
+	 * @brief 获取类型相同，名字相同的资产
+	 * @param AssetDataToFilter 
+	 * @param OutUnseDatas 
+	 */
+	void ListSameNameAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& AssetDataToFilter, TArray<TSharedPtr<FAssetData>> & OutUnseDatas);
+
+	/**
+	 * @brief 同步内容浏览器资产
+	 * @param AssetPathToSync 
+	 */
+	void SyncCBToClickedAssetForAssetList(const FString& AssetPathToSync);
 #pragma endregion 
 };
