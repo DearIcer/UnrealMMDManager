@@ -64,16 +64,17 @@ void SAdvancedOptionsWiget::Construct(const FArguments& InArgs)
 					[
 						ConstructComboBox()
 					]
-			]
-		// 水平盒子,构造刷新按钮
-		+SVerticalBox::Slot()
-			.AutoHeight()
-			[
-				SNew(SHorizontalBox)
+					// 水平盒子,构造刷新按钮
 					+SHorizontalBox::Slot()
 					.AutoWidth()
 					[
 						ConstructRefreshAssetListViewButton()
+					]
+					//文件路径
+					+SHorizontalBox::Slot()
+					.FillWidth(.1f)
+					[
+						ConstructComHelpTexts(TEXT("选中文件夹：\n") + InArgs._CurrentSelectdFolder,ETextJustify::Center)
 					]
 			]
 		// 水平盒子,构造是否将资产同步到内容浏览器多选框
@@ -85,6 +86,12 @@ void SAdvancedOptionsWiget::Construct(const FArguments& InArgs)
 					.AutoWidth()
 					[
 						ConstructSynchronousOrNotCheckBox(bSynchronizeTheSelectedItemToTheContentBrowser)
+					]
+					//帮助文本
+					+SHorizontalBox::Slot()
+					.FillWidth(.6f)
+					[
+						ConstructComHelpTexts(TEXT("在列表点击资源可以跳转到内容浏览器。"),ETextJustify::Center)
 					]
 			]
 		// 滚动列表,显示资产列
@@ -388,6 +395,18 @@ TSharedRef<SCheckBox> SAdvancedOptionsWiget::ConstructSynchronousOrNotCheckBox(c
 		];
 		
 	return ConstructedCheckBox;// 返回构造的复选框控件
+}
+
+TSharedRef<STextBlock> SAdvancedOptionsWiget::ConstructComHelpTexts(const FString& TextConten,
+	ETextJustify::Type TextJustify)
+{
+	TSharedRef<STextBlock> ConstructComHelpText =
+		SNew(STextBlock)
+		.Text(FText::FromString(TextConten))
+		.Justification(TextJustify)
+		.AutoWrapText(true)
+	;
+	return ConstructComHelpText;
 }
 
 #pragma endregion

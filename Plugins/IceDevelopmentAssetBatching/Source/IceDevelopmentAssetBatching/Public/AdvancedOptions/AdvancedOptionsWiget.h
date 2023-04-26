@@ -13,6 +13,8 @@ class SAdvancedOptionsWiget : public SCompoundWidget
 	SLATE_BEGIN_ARGS(SAdvancedOptionsWiget){}
 
 	SLATE_ARGUMENT(TArray<TSharedPtr<FAssetData>>,AssetsDataArray)
+
+	SLATE_ARGUMENT(FString,CurrentSelectdFolder)
 	SLATE_END_ARGS()
 
 public:
@@ -122,6 +124,7 @@ private:
 	 * @return 
 	 */
 	TSharedRef<SCheckBox>ConstructSynchronousOrNotCheckBox(const TSharedPtr<bool>& bSync);
+	
 #pragma endregion
 
 #pragma region ComboBoxForListingCondition
@@ -150,7 +153,11 @@ private:
 
 	TSharedPtr<STextBlock> ComboDisplayTextBlock;
 
-	
+	/**
+	 * @brief 构造组合框帮助文本
+	 * @return 
+	 */
+	TSharedRef<STextBlock> ConstructComHelpTexts(const FString & TextConten, ETextJustify::Type TextJustify);
 #pragma endregion
 
 #pragma region Ohter
